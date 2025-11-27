@@ -1,60 +1,53 @@
 from typing import Any, Dict
 
+from amadeus import Client
+
 from langchain.agents import create_agent
 from langchain_community.agent_toolkits.amadeus.toolkit import AmadeusToolkit
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_community.agent_toolkits.amadeus import toolkit as amadeus_module
+
+for attr in dir(amadeus_module):
+    obj = getattr(amadeus_module, attr)
+    if hasattr(obj, "model_rebuild"):
+        try:
+            obj.model_rebuild()
+        except:
+            pass
 
 
-class TripPlannerAgent:
-    """Trip planner that uses the Amadeus Toolkit under the hood.
+def _build_agent(llm: Any):
+    """Create a tool-calling agent powered by Amadeus tools."""
 
-    This wraps a LangChain agent graph configured with Amadeus tools so
-    higher-level graph code can just call `plan_trip` with a natural
-    language query.
-    """
+    toolkit = AmadeusToolkit(llm=llm)
+    tools = toolkit.get_tools()
 
-    def __init__(self, llm: Any):
-        self.llm = llm
-        self._agent = self._build_agent()
+    system_prompt = (
+        "You are a travel assistant that uses Amadeus tools to "
+        "answer questions about airports, flights, and itineraries. "
+        "Be concise and base answers on tool results when possible."
+    )
 
-    def _build_agent(self):
-        """Create a tool-calling agent powered by Amadeus tools.
+    agent = create_agent(
+        llm,
+        tools,
+        system_prompt=system_prompt
+    )
 
-        Assumes the following env vars are set (see Amadeus docs):
-        - AMADEUS_CLIENT_ID
-        - AMADEUS_CLIENT_SECRET
-        Optionally:
-        - AMADEUS_HOSTNAME ("test" or "production")
-        """
+    return agent
 
-        toolkit = AmadeusToolkit(llm=self.llm)
-        tools = toolkit.get_tools()
 
-        system_prompt = (
-            "You are a travel assistant that uses Amadeus tools to "
-            "answer questions about airports, flights, and itineraries. "
-            "Be concise and base answers on tool results when possible."
-        )
+def plan_trip(llm: Any, query: str, context: Dict[str, Any] | None = None) -> str:
+    """Plan a trip or answer travel questions via Amadeus tools."""
 
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                ("system", system_prompt),
-                ("human", "{input}"),
-            ]
-        )
+    agent = _build_agent(llm)
 
-        agent = create_agent(self.llm, tools, prompt)
+    payload: Dict[str, Any] = {"input": query}
+    if context:
+        payload["context"] = context
 
-        return agent
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": query}]}
+    )
 
-    async def plan_trip(self, query: str, context: Dict[str, Any] | None = None) -> str:
-        """Plan a trip or answer travel questions via Amadeus tools."""
-
-        payload: Dict[str, Any] = {"input": query}
-        if context:
-            payload["context"] = context
-
-        result = await self._agent.ainvoke(payload)
-        if isinstance(result, dict):
-            return str(result.get("output", ""))
-        return str(result)
+    messages = result.get("messages", [])
+    return messages[-1].content

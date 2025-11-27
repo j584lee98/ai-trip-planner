@@ -2,7 +2,7 @@ from typing import Any
 
 from langgraph.graph import StateGraph
 
-from backend.agents.trip_planner import TripPlannerAgent
+from backend.agents.trip_planner import plan_trip
 from backend.graphs.state import State
 
 
@@ -13,11 +13,11 @@ def create_graph(llm: Any):
     is ready for additional tools/agents (pricing, routes, etc.).
     """
 
-    async def planner_node(state: State) -> State:
-        agent = TripPlannerAgent(llm)
-        query = state.get("query", "")
-        result = await agent.plan_trip(query, context=state)
-        return {**state, "result": result}
+    def planner_node(state: State) -> State:
+        messages = state.get("messages", [])
+        result = plan_trip(llm, query=messages[-1].content if messages else "", context=state)
+        state["messages"].append({"role": "assistant", "content": result})
+        return state
 
     graph = StateGraph(State)
     graph.add_node("planner", planner_node)
