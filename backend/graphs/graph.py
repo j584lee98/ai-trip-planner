@@ -6,7 +6,7 @@ from backend.agents.trip_planner_agent import TripPlannerAgent
 from backend.graphs.state import TripState
 
 
-def create_trip_graph(llm: Any):
+def create_graph(llm: Any):
     """Create a LangGraph graph for trip planning with multiple nodes.
 
     For now this is a minimal single-agent node, but the structure
