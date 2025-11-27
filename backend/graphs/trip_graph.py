@@ -1,14 +1,9 @@
-from __future__ import annotations
+from typing import Any
 
-from typing import Any, Dict
-
-from langgraph.graph import StateGraph, END
+from langgraph.graph import StateGraph
 
 from backend.agents.trip_planner_agent import TripPlannerAgent
-
-
-class TripState(Dict[str, Any]):
-    """Simple state container for trip planning graph."""
+from backend.graphs.state import TripState
 
 
 def create_trip_graph(llm: Any):

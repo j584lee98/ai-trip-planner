@@ -1,12 +1,16 @@
 import streamlit as st
-from openai import OpenAI
+
+from backend.core.llm import create_llm
+from backend.graphs.runtime import run_trip_planner_sync
+
 
 st.title("AI Trip Planner")
 
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-
 if "llm" not in st.session_state:
-    st.session_state["llm"] = st.secrets["MODEL_NAME"]
+    st.session_state["llm"] = create_llm(
+        st.secrets["MODEL_NAME"],
+        st.secrets["OPENAI_API_KEY"]
+    )
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -20,14 +24,10 @@ if prompt := st.chat_input():
     with st.chat_message("user"):
         st.markdown(prompt)
 
+    llm = st.session_state["llm"]
+    response_text = run_trip_planner_sync(llm, prompt)
+
     with st.chat_message("assistant"):
-        stream = client.chat.completions.create(
-            model=st.session_state["llm"],
-            messages=[
-                {"role": m["role"], "content": m["content"]}
-                for m in st.session_state.messages
-            ],
-            stream=True,
-        )
-        response = st.write_stream(stream)
-    st.session_state.messages.append({"role": "assistant", "content": response})
+        st.markdown(response_text)
+
+    st.session_state.messages.append({"role": "assistant", "content": response_text})
