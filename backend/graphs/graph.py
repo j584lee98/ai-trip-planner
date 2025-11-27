@@ -2,8 +2,8 @@ from typing import Any
 
 from langgraph.graph import StateGraph
 
-from backend.agents.trip_planner_agent import TripPlannerAgent
-from backend.graphs.state import TripState
+from backend.agents.trip_planner import TripPlannerAgent
+from backend.graphs.state import State
 
 
 def create_graph(llm: Any):
@@ -13,13 +13,13 @@ def create_graph(llm: Any):
     is ready for additional tools/agents (pricing, routes, etc.).
     """
 
-    async def planner_node(state: TripState) -> TripState:
+    async def planner_node(state: State) -> State:
         agent = TripPlannerAgent(llm)
         query = state.get("query", "")
         result = await agent.plan_trip(query, context=state)
         return {**state, "result": result}
 
-    graph = StateGraph(TripState)
+    graph = StateGraph(State)
     graph.add_node("planner", planner_node)
     graph.set_entry_point("planner")
     graph.set_finish_point("planner")

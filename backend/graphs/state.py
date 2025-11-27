@@ -1,5 +1,5 @@
 from typing import Any, Dict
 
 
-class TripState(Dict[str, Any]):
+class State(Dict[str, Any]):
     """Simple state container for trip planning graph."""

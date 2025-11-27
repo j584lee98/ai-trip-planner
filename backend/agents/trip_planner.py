@@ -1,8 +1,6 @@
 from typing import Any, Dict
 
-from langchain.agents import AgentExecutor, create_tool_calling_agent
-from langchain.agents.output_parsers import ReActJsonSingleInputOutputParser
-from langchain.tools.render import render_text_description_and_args
+from langchain.agents import create_agent
 from langchain_community.agent_toolkits.amadeus.toolkit import AmadeusToolkit
 from langchain_core.prompts import ChatPromptTemplate
 
@@ -10,17 +8,17 @@ from langchain_core.prompts import ChatPromptTemplate
 class TripPlannerAgent:
     """Trip planner that uses the Amadeus Toolkit under the hood.
 
-    This wraps an AgentExecutor configured with Amadeus tools so that
+    This wraps a LangChain agent graph configured with Amadeus tools so
     higher-level graph code can just call `plan_trip` with a natural
     language query.
     """
 
     def __init__(self, llm: Any):
         self.llm = llm
-        self._agent_executor = self._build_agent_executor()
+        self._agent = self._build_agent()
 
-    def _build_agent_executor(self) -> AgentExecutor:
-        """Create an agent powered by Amadeus tools.
+    def _build_agent(self):
+        """Create a tool-calling agent powered by Amadeus tools.
 
         Assumes the following env vars are set (see Amadeus docs):
         - AMADEUS_CLIENT_ID
@@ -45,15 +43,9 @@ class TripPlannerAgent:
             ]
         )
 
-        agent = create_tool_calling_agent(
-            self.llm,
-            tools,
-            prompt,
-            tools_renderer=render_text_description_and_args,
-            output_parser=ReActJsonSingleInputOutputParser(),
-        )
+        agent = create_agent(self.llm, tools, prompt)
 
-        return AgentExecutor(agent=agent, tools=tools, verbose=False)
+        return agent
 
     async def plan_trip(self, query: str, context: Dict[str, Any] | None = None) -> str:
         """Plan a trip or answer travel questions via Amadeus tools."""
@@ -62,5 +54,7 @@ class TripPlannerAgent:
         if context:
             payload["context"] = context
 
-        result = await self._agent_executor.ainvoke(payload)
-        return str(result.get("output", ""))
+        result = await self._agent.ainvoke(payload)
+        if isinstance(result, dict):
+            return str(result.get("output", ""))
+        return str(result)
