@@ -6,6 +6,26 @@ from backend.config.runtime import run_trip_planner_sync
 
 st.title("AI Trip Planner")
 
+with st.sidebar:
+    st.header("Trip Details")
+    with st.form("trip_form"):
+        origin = st.text_input("Origin (Location)", placeholder="e.g., New York")
+        destination = st.text_input("Destination (Location)", placeholder="e.g., London")
+        start = st.date_input("Start (Date)")
+        end = st.date_input("End (Date)")
+        budget = st.number_input("Budget (USD)", step=1)
+        update = st.form_submit_button("Update")
+
+    if update:
+        st.session_state["details"] = {
+            "origin": origin,
+            "destination": destination,
+            "start": str(start),
+            "end": str(end),
+            "budget": budget,
+        }
+        st.success("Trip preferences saved.")
+
 if "llm" not in st.session_state:
     st.session_state["llm"] = create_llm(
         st.secrets["MODEL_NAME"],
