@@ -1,26 +1,12 @@
 from typing import Any, Dict
 
-from amadeus import Client
-
 from langchain.agents import create_agent
-from langchain_community.agent_toolkits.amadeus.toolkit import AmadeusToolkit
-from langchain_community.agent_toolkits.amadeus import toolkit as amadeus_module
 
-
-for attr in dir(amadeus_module):
-    obj = getattr(amadeus_module, attr)
-    if hasattr(obj, "model_rebuild"):
-        try:
-            obj.model_rebuild()
-        except:
-            pass
+from backend.tools.amadeus import get_amadeus_tools
 
 
 def _build_agent(llm: Any):
     """Create a tool-calling agent powered by Amadeus tools."""
-
-    toolkit = AmadeusToolkit(llm=llm)
-    tools = toolkit.get_tools()
 
     system_prompt = (
         "You are a travel assistant that uses Amadeus tools to "
@@ -30,7 +16,7 @@ def _build_agent(llm: Any):
 
     agent = create_agent(
         llm,
-        tools,
+        get_amadeus_tools(),
         system_prompt=system_prompt
     )
 
