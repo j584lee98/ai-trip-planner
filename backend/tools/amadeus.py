@@ -1,5 +1,3 @@
-from typing import Any
-
 from amadeus import Client
 from langchain_community.agent_toolkits.amadeus.toolkit import AmadeusToolkit
 from langchain_community.agent_toolkits.amadeus import toolkit as amadeus_module

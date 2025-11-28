@@ -1,7 +1,12 @@
-from typing import Any, Dict, Annotated
-from langgraph.graph.message import add_messages
+from typing import Any, Dict, Optional
 
 
 class State(Dict[str, Any]):
     """Simple state container for trip planning graph."""
-    messages: Annotated[list, add_messages]
+    origin: str
+    destination: str
+    people: int
+    start: str
+    end: str
+    budget: float
+    extra: Optional[str]
