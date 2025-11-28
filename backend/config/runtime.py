@@ -2,8 +2,8 @@ from typing import Any
 
 from langchain.messages import HumanMessage
 
-from backend.graphs.graph import create_graph
-from backend.graphs.state import State
+from backend.config.graph import create_graph
+from backend.config.state import State
 
 
 def run_trip_planner_sync(llm: Any, query: str, extra_state: dict | None = None) -> str:

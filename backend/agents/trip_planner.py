@@ -6,6 +6,7 @@ from langchain.agents import create_agent
 from langchain_community.agent_toolkits.amadeus.toolkit import AmadeusToolkit
 from langchain_community.agent_toolkits.amadeus import toolkit as amadeus_module
 
+
 for attr in dir(amadeus_module):
     obj = getattr(amadeus_module, attr)
     if hasattr(obj, "model_rebuild"):

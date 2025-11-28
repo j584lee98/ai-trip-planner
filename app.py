@@ -1,7 +1,7 @@
 import streamlit as st
 
 from backend.core.llm import create_llm
-from backend.graphs.runtime import run_trip_planner_sync
+from backend.config.runtime import run_trip_planner_sync
 
 
 st.title("AI Trip Planner")

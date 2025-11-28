@@ -3,7 +3,7 @@ from typing import Any
 from langgraph.graph import StateGraph
 
 from backend.agents.trip_planner import plan_trip
-from backend.graphs.state import State
+from backend.config.state import State
 
 
 def create_graph(llm: Any):
