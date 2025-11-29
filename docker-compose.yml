@@ -1,0 +1,11 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      - MODEL_NAME=${MODEL_NAME}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - ./.streamlit:/app/.streamlit:ro
+    restart: unless-stopped
