@@ -1,7 +1,7 @@
 import streamlit as st
 
 from backend.core.llm import create_llm
-from backend.config.runtime import run_trip_planner_sync
+from backend.config.runtime import invoke_graph
 
 
 st.set_page_config(
@@ -24,7 +24,7 @@ with st.sidebar:
     with st.form("trip_form"):
         origin = st.text_input("Origin (Location)", placeholder="e.g., New York")
         destination = st.text_input("Destination (Location)", placeholder="e.g., London")
-        people = st.number_input("Number of People", min_value=1, max_value=10, step=1, format="%d")
+        count = st.number_input("Number of Travelers", min_value=1, max_value=10, step=1, format="%d")
         start = st.date_input("Start (Date)")
         end = st.date_input("End (Date)")
         budget = st.number_input("Budget (USD)", min_value=1, step=1, format="%d")
@@ -33,12 +33,12 @@ with st.sidebar:
         update = st.form_submit_button("Update")
 
     if update:
-        if origin and destination and people and start and end and budget:
+        if origin and destination and count and start and end and budget:
             if end >= start:
                 st.session_state["details"] = {
                     "origin": origin,
                     "destination": destination,
-                    "people": people,
+                    "count": count,
                     "start": str(start),
                     "end": str(end),
                     "budget": budget,
@@ -58,9 +58,13 @@ download_pdf = col3.button("Download PDF", use_container_width=True, disabled=Tr
 if generate:
     if st.session_state.get("details"):
         with st.spinner("Planning your trip..."):
-            run_trip_planner_sync(
+            res = invoke_graph(
                 st.session_state["llm"],
                 st.session_state["details"]
             )
+            if res.get("node") == "validator":
+                st.error(res.get("message", "Trip details validation failed. Please check your inputs."))
+            else:
+                st.write(res.get("message", "Trip plan generated successfully!"))
     else:
         st.error("Please update trip details in the sidebar before generating a plan.")
