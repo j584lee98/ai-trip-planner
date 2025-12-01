@@ -39,6 +39,13 @@ def create_graph(llm: Any):
         state["node"] = "cost_estimator"
         return estimate_costs(state, llm)
 
+    def cost_estimator_router(state: State) -> str:
+        """Route back to itinerary_planner if over budget, otherwise continue."""
+        costs = state.get("costs", {})
+        if costs.get("within_budget", True):
+            return "response_generator"
+        return "itinerary_planner"
+
     def response_generator_node(state: State) -> State:
         state["node"] = "response_generator"
         return generate_response(state, llm)
@@ -55,7 +62,7 @@ def create_graph(llm: Any):
     graph.add_conditional_edges("details_validator", details_validator_router)
     graph.add_edge("data_fetcher", "itinerary_planner")
     graph.add_edge("itinerary_planner", "cost_estimator")
-    graph.add_edge("cost_estimator", "response_generator")
+    graph.add_conditional_edges("cost_estimator", cost_estimator_router)
     graph.add_edge("response_generator", END)
 
     compiled = graph.compile()
