@@ -52,8 +52,8 @@ with st.sidebar:
 
 col1, col2, col3 = st.columns(3, gap="medium")
 generate = col1.button("Generate", use_container_width=True, type="primary")
-trip_itinerary = col2.button("Trip Itinerary", use_container_width=True, disabled=True)
-cost_breakdown = col3.button("Cost Breakdown", use_container_width=True, disabled=True)
+trip_itinerary = col2.button("Trip Itinerary", use_container_width=True, disabled=not st.session_state.get("result"))
+cost_breakdown = col3.button("Cost Breakdown", use_container_width=True, disabled=not st.session_state.get("result"))
 
 if generate:
     if st.session_state.get("details"):
@@ -62,9 +62,19 @@ if generate:
                 st.session_state["llm"],
                 st.session_state["details"]
             )
+            st.session_state["result"] = res
+            
             if res.get("node") == "details_validator":
                 st.error(res.get("message", "Trip details validation failed. Please check your inputs."))
             else:
-                st.write(res.get("message", "Trip plan generated successfully!"))
+                st.markdown(res.get("message", "Trip plan generated successfully!"))
     else:
         st.error("Please update trip details in the sidebar before generating a plan.")
+
+# Display stored result if available
+if st.session_state.get("result") and not generate:
+    res = st.session_state["result"]
+    if res.get("node") == "details_validator":
+        st.error(res.get("message", "Trip details validation failed. Please check your inputs."))
+    else:
+        st.markdown(res.get("message", ""))
