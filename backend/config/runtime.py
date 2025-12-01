@@ -1,3 +1,5 @@
+"""Runtime utilities for invoking the trip planning graph."""
+
 from typing import Any
 
 from backend.config.graph import create_graph

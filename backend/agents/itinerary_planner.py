@@ -92,7 +92,7 @@ Trip Details:
 - Additional Notes: {state.get("extra", "None")}
 
 Available Travel Data:
-{state.get("message", "No data available")}"""
+{state.get("travel_data", "No data available")}"""
 
     if retry_count > 0 and previous_costs:
         revision_context = REVISION_PROMPT.format(

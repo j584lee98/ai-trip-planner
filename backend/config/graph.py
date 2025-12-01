@@ -1,6 +1,8 @@
+"""LangGraph workflow definition for trip planning."""
+
 from typing import Any
 
-from langgraph.graph import StateGraph, START, END
+from langgraph.graph import END, START, StateGraph
 
 from backend.agents.details_validator import validate_trip_details
 from backend.agents.data_fetcher import fetch_data

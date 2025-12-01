@@ -1,3 +1,5 @@
+"""LLM factory for the backend."""
+
 from langchain_openai import ChatOpenAI
 
 

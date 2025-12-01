@@ -1,7 +1,9 @@
+"""Streamlit application for AI Trip Planner."""
+
 import streamlit as st
 
-from backend.core.llm import create_llm
 from backend.config.runtime import invoke_graph
+from backend.core.llm import create_llm
 
 
 st.set_page_config(
@@ -14,8 +16,6 @@ if "llm" not in st.session_state:
         st.secrets["MODEL_NAME"],
         st.secrets["OPENAI_API_KEY"]
     )
-
-st.session_state["generated"] = False
 
 st.title("AI Trip Planner")
 

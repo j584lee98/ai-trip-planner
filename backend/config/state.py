@@ -1,3 +1,5 @@
+"""State schema for the trip planning graph."""
+
 from typing import Any, Dict, Optional
 
 
@@ -17,6 +19,7 @@ class State(Dict[str, Any]):
     node: str
     message: str
     is_valid: bool
+    travel_data: Optional[str]
     itinerary: Optional[Dict[str, Any]]
     costs: Optional[Dict[str, Any]]
     retry_count: int
