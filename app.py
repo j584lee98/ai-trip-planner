@@ -1,5 +1,7 @@
 """Streamlit application for AI Trip Planner."""
 
+import json
+
 import streamlit as st
 
 from backend.config.runtime import invoke_graph
@@ -52,8 +54,28 @@ with st.sidebar:
 
 col1, col2, col3 = st.columns(3, gap="medium")
 generate = col1.button("Generate", use_container_width=True, type="primary")
-trip_itinerary = col2.button("Trip Itinerary", use_container_width=True, disabled=not st.session_state.get("result"))
-cost_breakdown = col3.button("Cost Breakdown", use_container_width=True, disabled=not st.session_state.get("result"))
+
+result = st.session_state.get("result")
+itinerary_data = result.get("itinerary") if result else None
+costs_data = result.get("costs") if result else None
+
+col2.download_button(
+    label="Trip Itinerary",
+    data=json.dumps(itinerary_data, indent=2) if itinerary_data else "",
+    file_name="trip_itinerary.json",
+    mime="application/json",
+    use_container_width=True,
+    disabled=not itinerary_data
+)
+
+col3.download_button(
+    label="Cost Breakdown",
+    data=json.dumps(costs_data, indent=2) if costs_data else "",
+    file_name="cost_breakdown.json",
+    mime="application/json",
+    use_container_width=True,
+    disabled=not costs_data
+)
 
 if generate:
     if st.session_state.get("details"):
