@@ -14,3 +14,5 @@ class State(Dict[str, Any]):
     node: str
     message: str
     is_valid: bool
+    itinerary: Optional[Dict[str, Any]]
+    costs: Optional[Dict[str, Any]]

@@ -1,5 +1,3 @@
-"""Data fetcher agent for travel information."""
-
 from typing import Any, Dict
 
 from langchain.agents import create_agent
@@ -31,7 +29,8 @@ def fetch_data(state: Dict[str, Any], llm: Any) -> Dict[str, Any]:
     Budget (USD): ${state.get("budget", "N/A")}
     Additional Notes: {state.get("extra", "None")}
 
-    Based on these details, provide flight and accommodation options.
+    Based on these details, provide multiple options for
+    flights, accommodation, and activities.
     """
     
     result = agent.invoke(

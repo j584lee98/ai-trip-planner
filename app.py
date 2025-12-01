@@ -28,7 +28,7 @@ with st.sidebar:
         start = st.date_input("Start (Date)")
         end = st.date_input("End (Date)")
         budget = st.number_input("Budget (USD)", min_value=1, step=1, format="%d")
-        extra = st.text_area("Additional Information", placeholder="Preferred airlines, hotels, etc.")
+        extra = st.text_area("Additional Information", placeholder="Preferred airlines/hotels, no layovers, indoor activities only, etc.")
         
         update = st.form_submit_button("Update")
 
@@ -62,7 +62,7 @@ if generate:
                 st.session_state["llm"],
                 st.session_state["details"]
             )
-            if res.get("node") == "validator":
+            if res.get("node") == "details_validator":
                 st.error(res.get("message", "Trip details validation failed. Please check your inputs."))
             else:
                 st.write(res.get("message", "Trip plan generated successfully!"))
