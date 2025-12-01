@@ -5,3 +5,4 @@ langchain-openai
 langgraph
 amadeus
 langchain-community
+pydantic

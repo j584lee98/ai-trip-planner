@@ -1,11 +1,14 @@
 services:
   app:
     build: .
+    container_name: ai-trip-planner
     ports:
       - "8501:8501"
     environment:
       - MODEL_NAME=${MODEL_NAME}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AMADEUS_CLIENT_ID=${AMADEUS_CLIENT_ID}
+      - AMADEUS_CLIENT_SECRET=${AMADEUS_CLIENT_SECRET}
     volumes:
       - ./.streamlit:/app/.streamlit:ro
     restart: unless-stopped
