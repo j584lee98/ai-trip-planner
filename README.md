@@ -1,18 +1,32 @@
 # AI Trip Planner
 
-An AI-powered trip planning application built with Streamlit and LangGraph. The app validates trip details and fetches travel information using the Amadeus API.
+An AI-powered trip planning application built with Streamlit and LangGraph. The app uses a multi-agent workflow to validate trip details, fetch travel data, create detailed itineraries, estimate costs, and generate beautifully formatted trip plans.
 
 ## Features
 
-- Trip details validation using LLM
-- Flight and accommodation search via Amadeus API
-- Interactive Streamlit interface
+- **Trip Details Validation** - LLM-powered validation of dates, locations, budget, and traveler count
+- **Travel Data Fetching** - Flight and accommodation search via Amadeus API
+- **Itinerary Planning** - Day-by-day itinerary with flights, hotels, and activities
+- **Cost Estimation** - Comprehensive cost breakdown with budget comparison
+- **Smart Budget Optimization** - Automatically revises itinerary if over budget (up to 3 retries)
+- **Markdown Response** - Beautifully formatted trip plan with tables and emojis
+- **Interactive Streamlit Interface** - Easy-to-use web application
+
+## Agent Workflow
+
+```
+START → Details Validator → Data Fetcher → Itinerary Planner → Cost Estimator → Response Generator → END
+              ↓                                    ↑                  ↓
+         (invalid)                                 └── (over budget) ←┘
+              ↓
+             END
+```
 
 ## Requirements
 
 - Python 3.11+
 - OpenAI API key
-- Amadeus API credentials (optional, for flight data)
+- Amadeus API credentials (for flight/hotel data)
 
 ## Installation
 
@@ -26,8 +40,8 @@ An AI-powered trip planning application built with Streamlit and LangGraph. The 
 
 2. Create a virtual environment:
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 
 3. Install dependencies:
@@ -65,8 +79,8 @@ Create a `.streamlit/secrets.toml` file or set environment variables:
 |----------|-------------|----------|
 | `MODEL_NAME` | OpenAI model name (e.g., `gpt-4o`) | Yes |
 | `OPENAI_API_KEY` | Your OpenAI API key | Yes |
-| `AMADEUS_CLIENT_ID` | Amadeus API client ID | No |
-| `AMADEUS_CLIENT_SECRET` | Amadeus API client secret | No |
+| `AMADEUS_CLIENT_ID` | Amadeus API client ID | Yes |
+| `AMADEUS_CLIENT_SECRET` | Amadeus API client secret | Yes |
 
 ### Using `.streamlit/secrets.toml`
 
@@ -90,20 +104,28 @@ AMADEUS_CLIENT_SECRET=your-client-secret
 
 ```
 ai-trip-planner/
-├── app.py                 # Streamlit application
+├── app.py                          # Streamlit application
 ├── backend/
 │   ├── agents/
-│   │   ├── validator.py   # Trip details validation agent
-│   │   └── data_fetcher.py # Travel data fetcher agent
+│   │   ├── details_validator.py    # Trip details validation agent
+│   │   ├── data_fetcher.py         # Travel data fetcher agent
+│   │   ├── itinerary_planner.py    # Itinerary planning agent
+│   │   ├── cost_estimator.py       # Cost estimation agent
+│   │   └── response_generator.py   # Markdown response generator
 │   ├── config/
-│   │   ├── graph.py       # LangGraph workflow definition
-│   │   ├── runtime.py     # Graph invocation utilities
-│   │   └── state.py       # State schema
+│   │   ├── graph.py                # LangGraph workflow definition
+│   │   ├── runtime.py              # Graph invocation utilities
+│   │   └── state.py                # State schema
 │   ├── core/
-│   │   └── llm.py         # LLM factory
+│   │   └── llm.py                  # LLM factory
 │   └── tools/
-│       └── amadeus.py     # Amadeus API tools
+│       └── amadeus.py              # Amadeus API tools
 ├── requirements.txt
 ├── Dockerfile
-└── docker-compose.yml
+├── docker-compose.yml
+└── .dockerignore
 ```
+
+## License
+
+MIT
