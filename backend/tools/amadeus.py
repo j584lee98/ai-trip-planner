@@ -1,15 +1,14 @@
-"""Amadeus API tools for flight and travel data."""
-
-from langchain_community.agent_toolkits.amadeus import toolkit as amadeus_module
+from amadeus import Client
 from langchain_community.agent_toolkits.amadeus.toolkit import AmadeusToolkit
+from langchain_community.agent_toolkits.amadeus import toolkit as amadeus_module
 
-# Rebuild Pydantic models to avoid validation issues
-for _attr in dir(amadeus_module):
-    _obj = getattr(amadeus_module, _attr)
-    if hasattr(_obj, "model_rebuild"):
+
+for attr in dir(amadeus_module):
+    obj = getattr(amadeus_module, attr)
+    if hasattr(obj, "model_rebuild"):
         try:
-            _obj.model_rebuild()
-        except Exception:
+            obj.model_rebuild()
+        except:
             pass
 
 
