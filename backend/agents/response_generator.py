@@ -2,6 +2,8 @@
 
 from typing import Any, Dict
 
+from backend.config.state import MAX_BUDGET_RETRIES
+
 
 SYSTEM_PROMPT = """You are a travel content writer. Generate a beautifully formatted markdown 
 response presenting the complete trip plan to the user.
@@ -31,7 +33,19 @@ Use markdown formatting:
 
 def generate_response(state: Dict[str, Any], llm: Any) -> Dict[str, Any]:
     """Generate a formatted markdown response from the itinerary and costs."""
+    costs = state.get("costs", {})
+    retry_count = state.get("retry_count", 0)
+    within_budget = costs.get("within_budget", True)
+    
+    budget_note = ""
+    if not within_budget and retry_count >= MAX_BUDGET_RETRIES:
+        budget_note = f"""
+NOTE: After {MAX_BUDGET_RETRIES} attempts, the itinerary still exceeds the budget.
+Include a clear section explaining this and provide actionable suggestions for the user
+to either increase their budget or make further compromises."""
+
     prompt = f"""{SYSTEM_PROMPT}
+{budget_note}
 
 Trip Details:
 - Origin: {state.get("origin", "N/A")}
@@ -46,7 +60,7 @@ Itinerary:
 {state.get("itinerary", {})}
 
 Cost Breakdown:
-{state.get("costs", {})}
+{costs}
 
 Generate a complete, beautifully formatted markdown response."""
 

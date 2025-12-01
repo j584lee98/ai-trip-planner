@@ -1,6 +1,9 @@
 from typing import Any, Dict, Optional
 
 
+MAX_BUDGET_RETRIES = 3
+
+
 class State(Dict[str, Any]):
     """Simple state container for trip planning graph."""
     origin: str
@@ -16,3 +19,4 @@ class State(Dict[str, Any]):
     is_valid: bool
     itinerary: Optional[Dict[str, Any]]
     costs: Optional[Dict[str, Any]]
+    retry_count: int

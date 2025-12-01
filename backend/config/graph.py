@@ -7,18 +7,15 @@ from backend.agents.data_fetcher import fetch_data
 from backend.agents.itinerary_planner import plan_itinerary
 from backend.agents.cost_estimator import estimate_costs
 from backend.agents.response_generator import generate_response
-from backend.config.state import State
+from backend.config.state import State, MAX_BUDGET_RETRIES
 
 
 def create_graph(llm: Any):
-    """Create a LangGraph graph for trip planning with multiple nodes.
-
-    For now this is a minimal single-agent node, but the structure
-    is ready for additional tools/agents (pricing, routes, etc.).
-    """
+    """Create a LangGraph graph for trip planning with multiple nodes."""
 
     def details_validator(state: State) -> State:
         state["node"] = "details_validator"
+        state["retry_count"] = 0
         return validate_trip_details(state, llm)
 
     def details_validator_router(state: State) -> str:
@@ -40,11 +37,18 @@ def create_graph(llm: Any):
         return estimate_costs(state, llm)
 
     def cost_estimator_router(state: State) -> str:
-        """Route back to itinerary_planner if over budget, otherwise continue."""
+        """Route back to itinerary_planner if over budget and retries remain."""
         costs = state.get("costs", {})
+        retry_count = state.get("retry_count", 0)
+        
         if costs.get("within_budget", True):
             return "response_generator"
-        return "itinerary_planner"
+        
+        if retry_count < MAX_BUDGET_RETRIES:
+            state["retry_count"] = retry_count + 1
+            return "itinerary_planner"
+        
+        return "response_generator"
 
     def response_generator_node(state: State) -> State:
         state["node"] = "response_generator"

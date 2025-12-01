@@ -52,8 +52,8 @@ with st.sidebar:
 
 col1, col2, col3 = st.columns(3, gap="medium")
 generate = col1.button("Generate", use_container_width=True, type="primary")
-download_json = col2.button("Download JSON", use_container_width=True, disabled=True)
-download_pdf = col3.button("Download PDF", use_container_width=True, disabled=True)
+trip_itinerary = col2.button("Trip Itinerary", use_container_width=True, disabled=True)
+cost_breakdown = col3.button("Cost Breakdown", use_container_width=True, disabled=True)
 
 if generate:
     if st.session_state.get("details"):

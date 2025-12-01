@@ -62,10 +62,25 @@ Your itinerary should include:
 Make the itinerary realistic and well-paced, allowing for travel time between activities.
 Include a mix of popular attractions and local experiences."""
 
+REVISION_PROMPT = """The previous itinerary exceeded the budget. Please create a MORE BUDGET-FRIENDLY 
+itinerary by:
+- Choosing cheaper flight options (economy class, budget airlines, flexible dates)
+- Selecting more affordable accommodations (3-star hotels, hostels, vacation rentals)
+- Reducing expensive activities or replacing with free/low-cost alternatives
+- Focusing on essential experiences within the budget constraint
+
+Previous cost breakdown showed:
+{previous_costs}
+
+You MUST keep the total cost under ${budget}."""
+
 
 def plan_itinerary(state: Dict[str, Any], llm: Any) -> Dict[str, Any]:
     """Create a detailed itinerary based on trip details and fetched data."""
-    prompt = f"""{SYSTEM_PROMPT}
+    retry_count = state.get("retry_count", 0)
+    previous_costs = state.get("costs", {})
+    
+    base_prompt = f"""{SYSTEM_PROMPT}
 
 Trip Details:
 - Origin: {state.get("origin", "N/A")}
@@ -77,9 +92,16 @@ Trip Details:
 - Additional Notes: {state.get("extra", "None")}
 
 Available Travel Data:
-{state.get("message", "No data available")}
+{state.get("message", "No data available")}"""
 
-Create a complete itinerary as structured output."""
+    if retry_count > 0 and previous_costs:
+        revision_context = REVISION_PROMPT.format(
+            previous_costs=previous_costs,
+            budget=state.get("budget", "N/A")
+        )
+        prompt = f"{base_prompt}\n\n{revision_context}\n\nCreate a revised, budget-friendly itinerary as structured output."
+    else:
+        prompt = f"{base_prompt}\n\nCreate a complete itinerary as structured output."
 
     structured_llm = llm.with_structured_output(Itinerary)
     itinerary: Itinerary = structured_llm.invoke(prompt)
