@@ -94,11 +94,7 @@ if generate:
         if res:
             st.session_state["result"] = res
             status_container.update(label="Trip planning complete!", state="complete", expanded=False)
-            
-            if res.get("node") == "details_validator":
-                st.error(res.get("message", "Trip details validation failed. Please check your inputs."))
-            else:
-                st.markdown(res.get("message", "Trip plan generated successfully!"))
+            st.rerun()
     else:
         st.error("Please update trip details in the sidebar before generating a plan.")
 
