@@ -8,6 +8,8 @@ from backend.config.runtime import stream_graph, NODE_DESCRIPTIONS
 from backend.core.llm import create_llm
 
 
+MAX_TRIP_DAYS = 14
+
 st.set_page_config(
     page_title="AI Trip Planner",
     page_icon="✈️"
@@ -21,22 +23,31 @@ if "llm" not in st.session_state:
 
 st.title("AI Trip Planner")
 
+st.text(f"Powered by {st.secrets['MODEL_NAME']}")
+
 with st.sidebar:
     st.header("Trip Details")
     with st.form("trip_form"):
-        origin = st.text_input("Origin (Location)", placeholder="e.g., New York")
-        destination = st.text_input("Destination (Location)", placeholder="e.g., London")
-        count = st.number_input("Number of Travelers", min_value=1, max_value=10, step=1, format="%d")
-        start = st.date_input("Start (Date)")
-        end = st.date_input("End (Date)")
-        budget = st.number_input("Budget (USD)", min_value=1, step=1, format="%d")
-        extra = st.text_area("Additional Information", placeholder="Preferred airlines/hotels, no layovers, indoor activities only, etc.")
+        origin = st.text_input("Origin", placeholder="e.g., New York")
+        destination = st.text_input("Destination", placeholder="e.g., London")
+        count = st.number_input("Travelers", min_value=1, max_value=10, step=1, format="%d")
+        start = st.date_input("Start Date")
+        end = st.date_input("End Date")
+        budget = st.number_input("Budget (USD)", min_value=100, step=100, format="%d")
+        extra = st.text_area("Preferences", placeholder="e.g., no layovers, boutique hotels, outdoor activities...")
         
-        update = st.form_submit_button("Update")
+        update = st.form_submit_button("Save Trip Details", use_container_width=True)
 
     if update:
         if origin and destination and count and start and end and budget:
-            if end >= start:
+            trip_duration = (end - start).days
+            if end < start:
+                st.toast("End date cannot be before start date", icon="⚠️")
+            elif trip_duration > MAX_TRIP_DAYS:
+                st.toast(f"Trip cannot exceed {MAX_TRIP_DAYS} days", icon="⚠️")
+            elif origin.lower() == destination.lower():
+                st.toast("Origin and destination must be different", icon="⚠️")
+            else:
                 st.session_state["details"] = {
                     "origin": origin,
                     "destination": destination,
@@ -46,21 +57,22 @@ with st.sidebar:
                     "budget": budget,
                     "extra": extra
                 }
-                st.success("Trip preferences saved")
-            else:
-                st.error("End date cannot be before start date")
+                st.session_state["result"] = None
+                st.toast("Trip details saved!", icon="✅")
         else:
-            st.error("Please fill in all trip details")
+            st.toast("Please fill in all required fields", icon="⚠️")
+
 
 col1, col2, col3 = st.columns(3, gap="medium")
-generate = col1.button("Generate", use_container_width=True, type="primary")
+has_details = st.session_state.get("details") is not None
+generate = col1.button("Generate Plan", use_container_width=True, type="primary", disabled=not has_details)
 
 result = st.session_state.get("result")
 itinerary_data = result.get("itinerary") if result else None
 costs_data = result.get("costs") if result else None
 
 col2.download_button(
-    label="Trip Itinerary",
+    label="📥 Itinerary",
     data=json.dumps(itinerary_data, indent=2) if itinerary_data else "",
     file_name="trip_itinerary.json",
     mime="application/json",
@@ -69,7 +81,7 @@ col2.download_button(
 )
 
 col3.download_button(
-    label="Cost Breakdown",
+    label="📥 Cost Breakdown",
     data=json.dumps(costs_data, indent=2) if costs_data else "",
     file_name="cost_breakdown.json",
     mime="application/json",
