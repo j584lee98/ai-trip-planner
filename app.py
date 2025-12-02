@@ -4,7 +4,7 @@ import json
 
 import streamlit as st
 
-from backend.config.runtime import invoke_graph
+from backend.config.runtime import stream_graph, NODE_DESCRIPTIONS
 from backend.core.llm import create_llm
 
 
@@ -79,12 +79,21 @@ col3.download_button(
 
 if generate:
     if st.session_state.get("details"):
-        with st.spinner("Planning your trip..."):
-            res = invoke_graph(
+        status_container = st.status("Planning your trip...", expanded=True)
+        res = None
+        
+        with status_container:
+            for node_name, node_output in stream_graph(
                 st.session_state["llm"],
                 st.session_state["details"]
-            )
+            ):
+                description = NODE_DESCRIPTIONS.get(node_name, f"Processing {node_name}...")
+                st.write(description)
+                res = node_output
+        
+        if res:
             st.session_state["result"] = res
+            status_container.update(label="Trip planning complete!", state="complete", expanded=False)
             
             if res.get("node") == "details_validator":
                 st.error(res.get("message", "Trip details validation failed. Please check your inputs."))
