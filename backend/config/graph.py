@@ -36,7 +36,13 @@ def create_graph(llm: Any):
 
     def cost_estimator_node(state: State) -> State:
         state["node"] = "cost_estimator"
-        return estimate_costs(state, llm)
+        result = estimate_costs(state, llm)
+        
+        costs = result.get("costs", {})
+        if not costs.get("within_budget", True):
+            result["retry_count"] = result.get("retry_count", 0) + 1
+        
+        return result
 
     def cost_estimator_router(state: State) -> str:
         """Route back to itinerary_planner if over budget and retries remain."""
@@ -47,7 +53,6 @@ def create_graph(llm: Any):
             return "response_generator"
         
         if retry_count < MAX_BUDGET_RETRIES:
-            state["retry_count"] = retry_count + 1
             return "itinerary_planner"
         
         return "response_generator"
